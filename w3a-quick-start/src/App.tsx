@@ -42,22 +42,10 @@ console.log(web3auth);
 
 //  const check = ethers.baseWallet.privateKey
 
-const main = async () => {
-  const provider = new ethers.providers.JsonRpcProvider(
-    web3auth.provider as any
-  );
-  const signer = provider.getSigner();
-  const publicApiKey = "pk_wEP0gTlc3jcvBXEDpSnXBgbQ";
-  const fuseSDK = await FuseSDK.init(publicApiKey, signer);
-  const walletAddress = await fuseSDK.wallet.getSender();
-  console.log(`Sender Address is ${walletAddress}`);
-};
-
-main();
-
 function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [fuseSDK, setFuseSDK] = useState<FuseSDK | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -77,6 +65,19 @@ function App() {
 
     init();
   }, []);
+
+  useEffect(() => {
+    (async() => {
+      if(loggedIn && provider) {
+        const ethersProvider = new ethers.providers.Web3Provider(
+          web3auth.provider as any
+        );
+        const signer = ethersProvider.getSigner();
+        const publicApiKey = "pk_wEP0gTlc3jcvBXEDpSnXBgbQ";
+        setFuseSDK(await FuseSDK.init(publicApiKey, signer));
+      }
+    })()
+  }, [provider, loggedIn])
 
   const login = async () => {
     // IMP START - Login
@@ -115,7 +116,8 @@ function App() {
 
     // Get user's Ethereum public address
     const address = await web3.eth.getAccounts();
-    uiConsole(address);
+    const scaAddress = fuseSDK?.wallet.getSender();
+    uiConsole(`EOA: ${address}`, `SCA: ${scaAddress}`);
   };
 
   // const pkey = async () => {
