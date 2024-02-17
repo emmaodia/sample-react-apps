@@ -1,24 +1,18 @@
 import { useEffect, useState } from "react";
-// IMP START - Quick Start
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider } from "@web3auth/base";
 import { FuseSDK } from "@fuseio/fusebox-web-sdk";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-// IMP END - Quick Start
 import Web3 from "web3";
 import { ethers } from "ethers";
 
 import "./App.css";
 
-// IMP START - SDK Initialization
-// IMP START - Dashboard Registration
 const clientId =
   "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // get from https://dashboard.web3auth.io
-// IMP END - Dashboard Registration
 
 const chainConfig = {
   chainNamespace: CHAIN_NAMESPACES.EIP155,
-  chainId: "0x7A", // Please use 0x1 for Mainnet
+  chainId: "0x7A",
   rpcTarget: "https://rpc.fuse.io",
   displayName: "Fuse Mainnet",
   blockExplorer: "https://explorer.fuse.io/",
@@ -31,16 +25,8 @@ const web3auth = new Web3Auth({
   chainConfig,
   web3AuthNetwork: "sapphire_mainnet",
 });
-// IMP END - SDK Initialization
 
-// const privateKeyProvider = new EthereumPrivateKeyProvider({
-//   config: { chainConfig },
-// });
-
-// console.log(privateKeyProvider);
 console.log(web3auth);
-
-//  const check = ethers.baseWallet.privateKey
 
 function App() {
   const [provider, setProvider] = useState<IProvider | null>(null);
@@ -50,11 +36,8 @@ function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        // IMP START - SDK Initialization
         await web3auth.initModal();
-        // IMP END - SDK Initialization
         setProvider(web3auth.provider);
-
         if (web3auth.connected) {
           setLoggedIn(true);
         }
@@ -62,13 +45,12 @@ function App() {
         console.error(error);
       }
     };
-
     init();
   }, []);
 
   useEffect(() => {
-    (async() => {
-      if(loggedIn && provider) {
+    (async () => {
+      if (loggedIn && provider) {
         const ethersProvider = new ethers.providers.Web3Provider(
           web3auth.provider as any
         );
@@ -76,13 +58,11 @@ function App() {
         const publicApiKey = "pk_wEP0gTlc3jcvBXEDpSnXBgbQ";
         setFuseSDK(await FuseSDK.init(publicApiKey, signer));
       }
-    })()
-  }, [provider, loggedIn])
+    })();
+  }, [provider, loggedIn]);
 
   const login = async () => {
-    // IMP START - Login
     const web3authProvider = await web3auth.connect();
-    // IMP END - Login
     setProvider(web3authProvider);
     console.log(web3authProvider);
     if (web3auth.connected) {
@@ -91,42 +71,27 @@ function App() {
   };
 
   const getUserInfo = async () => {
-    // IMP START - Get User Information
     const user = await web3auth.getUserInfo();
-    // IMP END - Get User Information
     uiConsole(user);
   };
 
   const logout = async () => {
-    // IMP START - Logout
     await web3auth.logout();
-    // IMP END - Logout
     setProvider(null);
     setLoggedIn(false);
     uiConsole("logged out");
   };
 
-  // IMP START - Blockchain Calls
   const getAccounts = async () => {
     if (!provider) {
       uiConsole("provider not initialized yet");
       return;
     }
     const web3 = new Web3(provider as any);
-
-    // Get user's Ethereum public address
     const address = await web3.eth.getAccounts();
     const scaAddress = fuseSDK?.wallet.getSender();
     uiConsole(`EOA: ${address}`, `SCA: ${scaAddress}`);
   };
-
-  // const pkey = async () => {
-  //   const privateKey = await web3auth.provider.request({
-  //     method: "eth_private_key",
-  //   });
-  //   //Do something with privateKey
-  //   console.log(privateKey);
-  // };
 
   const getBalance = async () => {
     if (!provider) {
@@ -134,8 +99,6 @@ function App() {
       return;
     }
     const web3 = new Web3(provider as any);
-
-    // Get user's Ethereum public address
     const address = (await web3.eth.getAccounts())[0];
 
     // Get user's balance in ether
@@ -145,28 +108,6 @@ function App() {
     );
     uiConsole(balance);
   };
-
-  const signMessage = async () => {
-    if (!provider) {
-      uiConsole("provider not initialized yet");
-      return;
-    }
-    const web3 = new Web3(provider as any);
-
-    // Get user's Ethereum public address
-    const fromAddress = (await web3.eth.getAccounts())[0];
-
-    const originalMessage = "YOUR_MESSAGE";
-
-    // Sign the message
-    const signedMessage = await web3.eth.personal.sign(
-      originalMessage,
-      fromAddress,
-      "test password!" // configure your own password here.
-    );
-    uiConsole(signedMessage);
-  };
-  // IMP END - Blockchain Calls
 
   function uiConsole(...args: any[]): void {
     const el = document.querySelector("#console>p");
@@ -195,11 +136,6 @@ function App() {
           </button>
         </div>
         <div>
-          <button onClick={signMessage} className="card">
-            Sign Message
-          </button>
-        </div>
-        <div>
           <button onClick={logout} className="card">
             Log Out
           </button>
@@ -224,7 +160,7 @@ function App() {
         >
           Web3Auth{" "}
         </a>
-        & ReactJS (Webpack) Quick Start
+        & ReactJS - Fuse Web SDK Login Quick Start
       </h1>
 
       <div className="grid">{loggedIn ? loggedInView : unloggedInView}</div>
